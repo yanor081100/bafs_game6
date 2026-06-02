@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港DSE會計挑戰：獨資財務狀況表基本功</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2b6cb0;
+            --accent-color: #319795;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        /* 遊戲初始與選擇介面 */
+        .game-setup {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .level-select {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #2f855a; }
+
+        /* 遊戲核心面板 */
+        .game-panel {
+            display: none;
+        }
+
+        .case-info {
+            background: #edf2f7;
+            padding: 15px;
+            border-left: 5px solid var(--accent-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .case-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .game-content {
+            display: flex;
+            gap: 25px;
+            flex-direction: row;
+        }
+
+        @media (max-width: 768px) {
+            .game-content { flex-direction: column; }
+        }
+
+        /* 左側：待分類帳戶卡片 */
+        .question-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 250px;
+        }
+
+        .account-card {
+            background: linear-gradient(135deg, #63b3ed, #4299e1);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
+            margin-bottom: 20px;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 右側：五大分類按鈕區 */
+        .category-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .category-btn {
+            background-color: #fff;
+            color: var(--primary-color);
+            border: 2px solid var(--secondary-color);
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-btn:hover {
+            background-color: #ebf8ff;
+            transform: translateX(5px);
+        }
+
+        .category-btn span.badge {
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        /* 彈窗回饋樣式 */
+        .feedback-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .feedback-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .feedback-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .feedback-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feedback-msg {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        /* 結算報告頁面 */
+        .report-zone {
+            display: none;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .report-table th, .report-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .report-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .report-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>💼 香港DSE會計挑戰賽：獨資財務狀況表</h1>
+        <p>專業商業模擬系列 • 適合初學者輕鬆掌握基礎帳戶分類</p>
+    </header>
+
+    <div id="setup-page" class="game-setup">
+        <h2>歡迎來到會計基礎培訓計劃</h2>
+        <p style="margin-top: 10px; color: #4a5568;">所有個案均為獨資企業。請選擇你要挑戰的個案，幫東主將年終賬目分類：</p>
+        <div class="level-select">
+            <button class="btn" onclick="startGame('easy')">🟢 初級個案：小新陀螺店 (基礎零售)</button>
+            <button class="btn" style="background-color: #dd6b20;" onclick="startGame('medium')">🟠 中級個案：大雄洗衣店 (服務業賬目)</button>
+            <button class="btn" style="background-color: #e53e3e;" onclick="startGame('hard')">🔴 高級個案：阿明文具店 (綜合基礎練習)</button>
+        </div>
+    </div>
+
+    <div id="game-page" class="game-panel">
+        <div id="case-header" class="case-info">
+            </div>
+
+        <div class="status-bar">
+            <span id="current-case-name">個案：加載中</span>
+            <span id="score-display">得分：0</span>
+            <span id="progress-display">進度：0 / 0</span>
+        </div>
+
+        <div class="game-content">
+            <div class="question-zone">
+                <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">請將以下帳戶項目歸類到右側正確的類別：</p>
+                <div id="account-box" class="account-card">帳戶項目</div>
+                <div id="account-detail" style="color: #4a5568; font-size: 14px; text-align: center;">金額</div>
+            </div>
+
+            <div class="category-zone">
+                <button class="category-btn" onclick="submitAnswer('非流動資產')">
+                    📁 非流動資產 (Non-current assets) <span class="badge">長期使用</span>
+                </button>
+                <button class="category-btn" onclick="submitAnswer('流動資產')">
+                    💵 流動資產 (Current assets) <span class="badge">1年內變現</span>
+                </button>
+                <button class="category-btn" onclick="submitAnswer('資本的計算')">
+                    ⚖️ 資本的計算 (Calculation of Capital) <span class="badge">東主權益</span>
+                </button>
+                <button class="category-btn" onclick="submitAnswer('非流動負債')">
+                    ⏳ 非流動負債 (Non-current liabilities) <span class="badge">超過1年還款</span>
+                </button>
+                <button class="category-btn" onclick="submitAnswer('流動負債')">
+                    🏪 流動負債 (Current liabilities) <span class="badge">1年內清還</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="report-page" class="report-zone">
+        <h2 style="color: var(--primary-color); text-align: center;">📊 財務狀況表賬目審查完成！</h2>
+        <div id="final-summary" style="margin: 20px 0; font-size: 18px; text-align: center; font-weight: bold;"></div>
+        
+        <h3>📑 您的分類覆核清單：</h3>
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>帳戶項目</th>
+                    <th>正確分類</th>
+                    <th>DSE 官方概念重點說明</th>
+                </tr>
+            </thead>
+            <tbody id="report-tbody">
+                </tbody>
+        </table>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn btn-success" onclick="resetGame()">🔄 挑戰其他個案 / 重新開始</button>
+        </div>
+    </div>
+</div>
+
+<div id="feedback-pop" class="feedback-overlay">
+    <div class="feedback-modal">
+        <div id="fb-icon" class="feedback-icon">🎉</div>
+        <div id="fb-title" class="feedback-title">非常出色！</div>
+        <div id="fb-msg" class="feedback-msg">回饋內文</div>
+        <button id="fb-btn" class="btn" onclick="closeFeedback()">繼續下一題</button>
+    </div>
+</div>
+
+<script>
+// 基礎數據：三個獨資個案，帳戶項目均簡單直接，符合香港DSE會計名詞
+const gameData = {
+    easy: {
+        caseName: "小新陀螺店 (初級個案)",
+        desc: "東主小新獨資經營的零售店。請協助小新把年終結算日的賬目正確歸類，以編製基本財務狀況表。",
+        items: [
+            { name: "汽車", amount: "$100,000", cat: "非流動資產", info: "經營業務使用的送貨車輛，屬於預期使用超過一年的有形固定資產。", praise: "做得好！汽車是企業營運的非流動資產！" },
+            { name: "設備", amount: "$80,000", cat: "非流動資產", info: "店內使用的電腦系統及陳列櫃，屬非流動資產。", praise: "正確！設備是維持店舖運作的非流動資產。" },
+            { name: "存貨", amount: "$30,000", cat: "流動資產", info: "未售出的玩具及陀螺，屬於企業日常業務中持有供出售的流動資產。", praise: "精準！存貨是零售業最核心的流動資產！" },
+            { name: "應收貨款", amount: "$12,000", cat: "流動資產", info: "客戶賒賬購買商品而欠本店的款項，預期短時間內收回。", praise: "太棒了！應收貨款（舊稱應收賬款）是應向賒銷客戶收取的流動資產。" },
+            { name: "現金", amount: "$6,000", cat: "流動資產", info: "店內保險箱的現鈔及銀行存款，是流動性最高的資產。", praise: "完全正確！現金及現金等價物是流動資產之首。" },
+            { name: "資本 (202X年1月1日)", amount: "$30,000", cat: "資本的計算", info: "期初資本，是獨資東主投入業務的初始權益。", praise: "好極了！期初資本是計算期末東主權益的起點。" },
+            { name: "淨利潤", amount: "$100,000", cat: "資本的計算", info: "本年度經營所得的淨利潤，會令資本增加，屬於資本計算內的加項。", praise: "精彩！淨利潤會回報給東主，令總資本增加！" },
+            { name: "提用", amount: "$2,000", cat: "資本的計算", info: "東主從公司提取作個人用途的款項，會使總資本減少（減項）。", praise: "眼神犀利！提用是東主抽走資金，必須在資本計算中扣減。" },
+            { name: "貸款：好有錢銀行 (3年期)", amount: "$50,000", cat: "非流動負債", info: "還款期超過一年的長期借款，屬於非流動負債。", praise: "完全對！3年期貸款屬於非流動（長期）負債。" },
+            { name: "貸款：陳小姐 (半年期)", amount: "$30,000", cat: "流動負債", info: "還款期在一年之內的短期借貸，屬於流動負債。", praise: "心細如髮！半年期（少於12個月）的貸款必須列為流動負債。" },
+            { name: "應付貨款", amount: "$20,000", cat: "流動負債", info: "因向供應商賒購貨品而欠對方的貨款，通常在幾個月內清還。", praise: "非常專業！應付貨款（舊稱應付賬款）是日常營運的流動負債。" }
+        ]
+    },
+    medium: {
+        caseName: "大雄洗衣店 (中級個案)",
+        desc: "東主大雄獨資經營的服務型洗衣店。項目雖然與零售店不同，但歸類邏輯完全一樣！",
+        items: [
+            { name: "物業 (店舖)", amount: "$500,000", cat: "非流動資產", info: "大雄自置的洗衣店舖，屬於長期持有的非流動資產。", praise: "很有眼光！物業是高價值的非流動資產。" },
+            { name: "洗衣機及設備", amount: "$60,000", cat: "非流動資產", info: "店內賴以生存的專業洗衣機，預期使用多年，屬非流動資產。", praise: "完全正確！生產設備能為公司帶來長期經濟效益。" },
+            { name: "銀行存款", amount: "$45,000", cat: "流動資產", info: "存放在銀行商業戶口內的營運資金，屬於流動資產。", praise: "對了！銀行存款是流動性極高的流動資產。" },
+            { name: "應收貨款", amount: "$5,000", cat: "流動資產", info: "大客戶（如附近酒店）賒賬洗衣服欠本公司的款項，屬於流動資產。", praise: "答對了！這代表未來可以收到的現金資源。" },
+            { name: "資本 (期初)", amount: "$400,000", cat: "資本的計算", info: "期初資本，是東主最初投入這家洗衣店的資金。", praise: "正確！這是資本計算的最頂部項目。" },
+            { name: "淨虧損", amount: "$12,000", cat: "資本的計算", info: "本年度經營出現虧損，會導致東主權益減少，在資本計算中作為減項。", praise: "很清晰！淨虧損要從資本中扣除，你沒有被它混淆！" },
+            { name: "提用", amount: "$3,000", cat: "資本的計算", info: "大雄拿走店內現金作私人用途，會使東主總資本減少。", praise: "沒錯！提用就是扣減東主資本的項目。" },
+            { name: "銀行長期貸款 (5年期)", amount: "$150,000", cat: "非流動負債", info: "5年後才需要清還的銀行貸款，屬於非流動負債。", praise: "沒錯！多於1年的借款就是非流動負債。" },
+            { name: "應付貨款", amount: "$15,000", cat: "流動負債", info: "因購買洗衣粉和柔順劑而欠供應商的貨款，屬於流動負債。", praise: "好樣的！應付貨款屬於短期內必須清還的流動負債。" }
+        ]
+    },
+    hard: {
+        caseName: "阿明文具店 (高級個案)",
+        desc: "東主阿明獨資經營的社區文具店。本關卡將所有基礎項目隨機混合，考驗學生的基本功是否紮實！",
+        items: [
+            { name: "辦公室家具", amount: "$25,000", cat: "非流動資產", info: "文具店內的收銀櫃枱、陳列貨架，屬於非流動資產。", praise: "概念清晰！貨架家具屬於長期使用的非流動資產。" },
+            { name: "店舖裝修", amount: "$40,000", cat: "非流動資產", info: "店舖的硬裝裝修，會為店舖帶來多年的營運環境，屬於非流動資產。", praise: "非常好！裝修費用在會計上通常列作非流動資產。" },
+            { name: "文具存貨", amount: "$18,000", cat: "流動資產", info: "店內準備賣給學生的筆和筆記本，屬於流動資產。", praise: "完全正確！存貨隨時準備變現，是流動資產。" },
+            { name: "現金", amount: "$4,000", cat: "流動資產", info: "收銀機內的輔幣與鈔票，是流動資產。", praise: "手到擒來！現金是基礎的流動資產項目。" },
+            { name: "資本", amount: "$50,000", cat: "資本的計算", info: "阿明投入文具店的期初資本。", praise: "正確！屬於東主權益（資本的計算）。" },
+            { name: "淨利潤", amount: "$32,000", cat: "資本的計算", info: "賺到的利潤屬於東主，會在資本中「加」上去。", praise: "太棒了！淨利潤會增加總資本。" },
+            { name: "提用", amount: "$1,000", cat: "資本的計算", info: "東主阿明拿了店裏的文具給自己孩子用，屬於提用（減項）。", praise: "心細如髮！拿走店內貨物作私人用途也算提用，扣減資本！" },
+            { name: "長期借款 (2年期)", amount: "$30,000", cat: "非流動負債", info: "還款期為2年的借款，超過一年，故屬非流動負債。", praise: "答對了！只要超過12個月就是非流動負債。" },
+            { name: "應付貨款", amount: "$14,000", cat: "流動負債", info: "欠文具批發商的貨款，屬於流動負債。", praise: "完全正確！應付貨款是短期必須清還的流動負債。" }
+        ]
+    }
+};
+
+let currentLevel = '';
+let currentItems = [];
+let currentItemIndex = 0;
+let score = 0;
+let userResults = [];
+
+function startGame(level) {
+    currentLevel = level;
+    currentItems = [...gameData[level].items];
+    currentItems.sort(() => Math.random() - 0.5); // 隨機題目順序，增加趣味性
+    currentItemIndex = 0;
+    score = 0;
+    userResults = [];
+
+    document.getElementById('setup-page').style.display = 'none';
+    document.getElementById('game-page').style.display = 'block';
+    document.getElementById('report-page').style.display = 'none';
+
+    document.getElementById('case-header').innerHTML = `
+        <h3>🏢 正在審查：${gameData[level].caseName}</h3>
+        <p>${gameData[level].desc}</p>
+    `;
+    document.getElementById('current-case-name').innerText = `個案：${gameData[level].caseName}`;
+    
+    updateStatusBar();
+    showNextItem();
+}
+
+function updateStatusBar() {
+    document.getElementById('score-display').innerText = `得分：${score}`;
+    document.getElementById('progress-display').innerText = `進度：${currentItemIndex} / ${currentItems.length}`;
+}
+
+function showNextItem() {
+    if (currentItemIndex >= currentItems.length) {
+        endGame();
+        return;
+    }
+    let item = currentItems[currentItemIndex];
+    document.getElementById('account-box').innerText = item.name;
+    document.getElementById('account-detail').innerText = `賬目金額：${item.amount}`;
+    updateStatusBar();
+}
+
+function submitAnswer(chosenCategory) {
+    let item = currentItems[currentItemIndex];
+    let isCorrect = (chosenCategory === item.cat);
+    
+    let popIcon = document.getElementById('fb-icon');
+    let popTitle = document.getElementById('fb-title');
+    let popMsg = document.getElementById('fb-msg');
+    
+    userResults.push({
+        name: item.name,
+        correctCat: item.cat,
+        info: item.info,
+        isCorrect: isCorrect
+    });
+
+    if (isCorrect) {
+        score += 10;
+        popIcon.innerText = "🌟";
+        popTitle.innerText = "答對了！" + (item.praise ? " " + item.praise : "正確的分類！");
+        popTitle.style.color = "var(--success-color)";
+    } else {
+        popIcon.innerText = "❌";
+        popTitle.innerText = `分類出錯！正確應為：【${item.cat}】`;
+        popTitle.style.color = "var(--error-color)";
+    }
+    
+    popMsg.innerHTML = `
+        <strong>帳戶項目：</strong>${item.name} (${item.amount})<br>
+        <strong>會計基本概念：</strong>${item.info}
+    `;
+    
+    document.getElementById('feedback-pop').style.display = 'flex';
+}
+
+function closeFeedback() {
+    document.getElementById('feedback-pop').style.display = 'none';
+    currentItemIndex++;
+    showNextItem();
+}
+
+function endGame() {
+    document.getElementById('game-page').style.display = 'none';
+    document.getElementById('report-page').style.display = 'block';
+
+    let maxScore = currentItems.length * 10;
+    let percentage = (score / maxScore);
+    
+    let rating = "";
+    if (percentage === 1) rating = "🏆 完美編製！你已完全掌握獨資財務狀況表的五大核心分類！";
+    else if (percentage >= 0.8) rating = "👏 非常優秀！你對資產、負債和資本的劃分非常熟悉！";
+    else if (percentage >= 0.6) rating = "👍 基本合格！但仍有部分基礎項目混淆了，請看下方清單複習。";
+    else rating = "📚 需要再加把勁！建議重新對照剛剛老師講授的公式與分類定義。";
+
+    document.getElementById('final-summary').innerHTML = `
+        最終得分：<span style="color:var(--success-color); font-size:24px;">${score}</span> / ${maxScore} 分<br>
+        <span style="font-size:16px; color:#4a5568;">${rating}</span>
+    `;
+
+    let tbody = document.getElementById('report-tbody');
+    tbody.innerHTML = "";
+    userResults.forEach(res => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight:bold; color:${res.isCorrect ? 'var(--text-color)' : 'var(--error-color)'}">
+                ${res.name} ${res.isCorrect ? '✅' : '❌'}
+            </td>
+            <td><span style="background:#edf2f7; padding:3px 8px; border-radius:4px; font-size:13px;">${res.correctCat}</span></td>
+            <td style="font-size:13px; color:#4a5568;">${res.info}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function resetGame() {
+    document.getElementById('setup-page').style.display = 'block';
+    document.getElementById('game-page').style.display = 'none';
+    document.getElementById('report-page').style.display = 'none';
+}
+</script>
+</body>
+</html>
